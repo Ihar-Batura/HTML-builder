@@ -1,26 +1,42 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs'); // Читать файлы / Создать файлы / Обновить файлы / Удалить файлы / Переименовать файлы
+const path = require('path'); // предоставляет набор функций для работы с путями в файловой системе
 
-fs.mkdir(path.join(__dirname, 'files-copy'), (err) => {
-  if (err) console.log('folder files-copy already exist');
-});
-fs.readdir(path.join(__dirname, 'files-copy'), (err, files) => {
-  if (err) throw err;
-  for (let file of files) {
-    const link = path.join(__dirname, 'files-copy', file);
-    fs.unlink(link, (err) => {
-      if (err) throw err;
-    });
-  }
-});
+function copyDir() {
+  fs.mkdir(
+    path.join(__dirname, 'files-copy'),
+    { recursive: true },
+    function (error) {
+      if (error) {
+        throw error;
+      }
+    },
+  );
 
-fs.readdir(path.join(__dirname, 'files'), (err, files) => {
-  if (err) throw err;
-  for (let file of files) {
-    const originalFile = path.join(__dirname, 'files', file);
-    const copyFile = path.join(__dirname, 'files-copy', file);
-    fs.copyFile(originalFile, copyFile, (err) => {
-      if (err) throw err;
+  fs.readdir(path.join(__dirname, 'files'), function (error, files) {
+    if (error) {
+      throw error;
+    }
+
+    files.forEach((file) => {
+      fs.copyFile(
+        path.join(__dirname, 'files', file),
+        path.join(__dirname, 'files-copy', file),
+        function (error) {
+          if (error) {
+            throw error;
+          }
+        },
+      );
     });
-  }
-});
+  });
+}
+
+copyDir();
+
+// fs.mkdir - создает новую папку files-copy
+
+// fs.readdir - метод для чтения содержимого папки используется
+
+// { recursive: true } - для обхода ошибки если папка уже была создана
+
+// fs.copyFile - используется для асинхронного копирования файла из исходного пути в целевой путь. По умолчанию Node.js перезапишет файл, если он уже существует в указанном месте назначения.
