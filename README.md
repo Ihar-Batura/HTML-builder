@@ -45,3 +45,5 @@ Once the cross-check begins, access the guidelines by following [this link](http
 [04 Copying a Directory](https://github.com/EvgeniiMal/HTML-builder/tree/main/04-copy-directory)  
 [05 Building the CSS Bundle](https://github.com/EvgeniiMal/HTML-builder/blob/main/05-merge-styles)  
 [06 Building an HTML Page from Components and Styles](https://github.com/EvgeniiMal/HTML-builder/tree/main/06-build-page)
+
+
