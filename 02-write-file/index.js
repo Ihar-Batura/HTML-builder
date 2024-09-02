@@ -1,33 +1,48 @@
-//Import all required modules.
-const fs = require('fs');
-const path = require('path');
-const process = require('process');
+const fs = require('fs'); // Читать файлы / Создать файлы / Обновить файлы / Удалить файлы / Переименовать файлы
+const path = require('path'); // предоставляет набор функций для работы с путями в файловой системе
+const process = require('process'); // предоставляет информацию о текущем процессе Node.js и управляет им.
 
-//Creat a text file
-fs.writeFile(path.join(__dirname, 'text.txt'), '', (err) => {
-  if (err) {
-    throw err;
+//создаем файл
+fs.writeFile(path.join(__dirname, 'text.txt'), '', function (error) {
+  if (error) {
+    // если ошибка при создании файла
+    return console.log(error);
   }
 });
 
-//Display a welcome message in the console.
-process.stdout.write('Hi, \nCan you write something interesting\n');
+// fs.writeFile() - функция для асинхронной записи файла
 
-//Wait for user input, write the entered text to the file.
-process.stdin.on('data', (data) => {
-  fs.appendFile(path.join(__dirname, 'text.txt'), data, (err) => {
-    if (err) {
-      throw err;
-    }
-  });
-  //Checking for the presence of the keyword `exit`.
+//приветствие
+process.stdout.write(
+  'Hello my friend! \nCan you write something interesting?\n',
+);
+
+// process.stdout.write — функция низкого уровня, основанная на потоках Node.js и предоставляющая возможность тонкого контроля над выводом текста.
+
+process.stdin.on('data', function (data) {
+  fs.appendFile(
+    path.join(__dirname, 'text.txt'),
+    data,
+    'utf-8',
+    function (error) {
+      if (error) {
+        console.log(error);
+      }
+    },
+  );
+
+  // проверка на вводимое слово
   if (data.toString().trim() === 'exit') {
     process.exit();
   }
 });
 
-//A farewell message when the process is stopped.
-process.on('exit', () => console.log('Bye,bye \nSee you later!'));
+// process.stdin — это встроенный интерфейс прикладного программирования модуля процесса , который прослушивает пользовательский ввод. Свойство stdin объекта процесса — это читаемый поток. Он использует функцию on() для прослушивания события.
+
+process.on('exit', () => console.log('Bye my friend, \nSee you soon...'));
 process.on('SIGINT', () => {
   process.exit();
 });
+
+//process.on('SIGINT') - определяет нажатие Ctrl+C
+//process.exit() - предписывает Node.js синхронно завершить процесс
