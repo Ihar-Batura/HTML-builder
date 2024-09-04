@@ -1,152 +1,151 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs'); // Читать файлы / Создать файлы / Обновить файлы / Удалить файлы / Переименовать файлы
+const path = require('path'); // предоставляет набор функций для работы с путями в файловой системе
 
-// Создает папку project-dist
-fs.mkdir(path.join(__dirname, 'project-dist'), (err) => {
-  if (err) console.log('folder project-dist already exist');
-});
-// Создает папку assets
-fs.mkdir(path.join(__dirname, 'project-dist', 'assets'), (err) => {
-  if (err) console.log('folder project-dist/assets already exist');
-});
-// Создает папку assets/fonts
-fs.mkdir(path.join(__dirname, 'project-dist', 'assets', 'fonts'), (err) => {
-  if (err) console.log('folder assets/fonts already exist');
-});
-// Создает папку assets/img
-fs.mkdir(path.join(__dirname, 'project-dist', 'assets', 'img'), (err) => {
-  if (err) console.log('folder assets/img already exist');
-});
-// Создает папку assets/svg
-fs.mkdir(path.join(__dirname, 'project-dist', 'assets', 'svg'), (err) => {
-  if (err) console.log('folder assets/svg already exist');
-});
+fs.mkdir(
+  path.join(__dirname, 'project-dist'),
+  { recursive: true },
+  function (error) {
+    if (error) {
+      throw error;
+    }
 
-//Создает файл index.html
-fs.writeFile(path.join(__dirname, 'project-dist', 'index.html'), '', (err) => {
-  if (err) throw err;
-});
-//Создает файл style.css
-fs.writeFile(path.join(__dirname, 'project-dist', 'style.css'), '', (err) => {
-  if (err) throw err;
-});
-//Должен обьеденять все стили из разных файлов stales.css в один!
-fs.readdir(path.join(__dirname, 'styles'), (err, files) => {
-  if (err) throw err;
-  for (let file of files) {
-    //Перезаписывает только один файл, нужно допилить!
-    fs.readFile(
-      path.join(__dirname, 'styles', file),
-      'utf-8',
-      function (err, fileContent) {
-        if (err) throw err;
-        fs.writeFile(
-          path.join(__dirname, 'project-dist', 'style.css'),
-          fileContent,
-          (err) => {
-            if (err) throw err;
-          },
-        );
+    fs.copyFile(
+      path.join(__dirname, 'template.html'),
+      path.join(__dirname, 'project-dist', 'index.html'),
+      function (error) {
+        if (error) {
+          return error;
+        }
       },
     );
-  }
-});
+  },
+);
 
-//Удаляет файлы из папки fonts
-fs.readdir(
-  path.join(__dirname, 'project-dist', 'assets', 'fonts'),
-  (err, files) => {
-    if (err) throw err;
-    for (let file of files) {
-      const link = path.join(
-        __dirname,
-        'project-dist',
-        'assets',
-        'fonts',
-        file,
-      );
-      fs.unlink(link, (err) => {
-        if (err) throw err;
-      });
+fs.writeFile(
+  path.join(__dirname, 'project-dist', 'style.css'),
+  '',
+  function (error) {
+    if (error) {
+      throw error;
     }
   },
 );
-//Копирует файлы из папки fonts в project-dist/assets/fonts
-fs.readdir(path.join(__dirname, 'assets', 'fonts'), (err, files) => {
-  if (err) throw err;
-  for (let file of files) {
-    const originalFile = path.join(__dirname, 'assets', 'fonts', file);
-    const copyFile = path.join(
-      __dirname,
-      'project-dist',
-      'assets',
-      'fonts',
-      file,
-    );
-    fs.copyFile(originalFile, copyFile, (err) => {
-      if (err) throw err;
-    });
-  }
-});
 
-//Удаляет файлы из папки img
 fs.readdir(
-  path.join(__dirname, 'project-dist', 'assets', 'img'),
-  (err, files) => {
-    if (err) throw err;
-    for (let file of files) {
-      const link = path.join(__dirname, 'project-dist', 'assets', 'img', file);
-      fs.unlink(link, (err) => {
-        if (err) throw err;
-      });
+  path.join(__dirname, 'styles'),
+  { withFileTypes: true },
+  function (error, files) {
+    if (error) {
+      return error;
     }
+    files.forEach((file) => {
+      if (file.isFile()) {
+        if (file.name.split('.')[1] === 'css') {
+          fs.readFile(
+            path.join(__dirname, 'styles', file.name),
+            'utf-8',
+            function (error, data) {
+              if (error) {
+                throw error;
+              }
+
+              fs.writeFile(
+                path.join(__dirname, 'project-dist/style.css'),
+                data,
+                { flag: 'a+' },
+                function (error) {
+                  if (error) {
+                    throw error;
+                  }
+                },
+              );
+            },
+          );
+        }
+      }
+    });
   },
 );
-//Копирует файлы из папки fonts в project-dist/assets/img
-fs.readdir(path.join(__dirname, 'assets', 'img'), (err, files) => {
-  if (err) throw err;
-  for (let file of files) {
-    const originalFile = path.join(__dirname, 'assets', 'img', file);
-    const copyFile = path.join(
-      __dirname,
-      'project-dist',
-      'assets',
-      'img',
-      file,
-    );
-    fs.copyFile(originalFile, copyFile, (err) => {
-      if (err) throw err;
-    });
-  }
-});
 
-//Удаляет файлы из папки svg
-fs.readdir(
-  path.join(__dirname, 'project-dist', 'assets', 'svg'),
-  (err, files) => {
+fs.mkdir(
+  path.join(__dirname, 'project-dist', 'assets'),
+  { recursive: true },
+  (err) => {
     if (err) throw err;
-    for (let file of files) {
-      const link = path.join(__dirname, 'project-dist', 'assets', 'svg', file);
-      fs.unlink(link, (err) => {
-        if (err) throw err;
-      });
-    }
   },
 );
-//Копирует файлы из папки fonts в project-dist/assets/svg
-fs.readdir(path.join(__dirname, 'assets', 'svg'), (err, files) => {
-  if (err) throw err;
-  for (let file of files) {
-    const originalFile = path.join(__dirname, 'assets', 'svg', file);
-    const copyFile = path.join(
-      __dirname,
-      'project-dist',
-      'assets',
-      'svg',
-      file,
-    );
-    fs.copyFile(originalFile, copyFile, (err) => {
-      if (err) throw err;
+
+fs.readdir(
+  path.join(__dirname, 'assets'),
+  { withFileTypes: true },
+  function (error, files) {
+    if (error) {
+      throw error;
+    }
+    files.forEach((file) => {
+      if (!file.isFile()) {
+        fs.readdir(
+          path.join(__dirname, 'assets', file.name),
+          function (error, filesInto) {
+            if (error) {
+              throw error;
+            }
+
+            fs.mkdir(
+              path.join(__dirname, 'project-dist/assets', file.name),
+              { recursive: true },
+              (err) => {
+                if (err) {
+                  throw err;
+                }
+                filesInto.forEach((fileIn) => {
+                  fs.copyFile(
+                    path.join(__dirname, 'assets', file.name, fileIn),
+                    path.join(
+                      __dirname,
+                      'project-dist/assets',
+                      file.name,
+                      fileIn,
+                    ),
+                    (err) => {
+                      if (err) throw err;
+                    },
+                  );
+                });
+              },
+            );
+          },
+        );
+      } else {
+        fs.copyFile(
+          path.join(__dirname, 'assets', file.name),
+          path.join(__dirname, 'project-dist/assets', file.name),
+          function (error) {
+            if (error) {
+              throw error;
+            }
+          },
+        );
+      }
     });
-  }
-});
+  },
+);
+// { recursive: true } in fs.mkdir - не будет выкидывать ошибку если папка уже создана
+
+// fs.copyFile - копируем файл в папку project-dist и работаем (изменяем) с ним
+
+// fs.readFile - читаем файл template.html
+
+// fs.readdir - читае модержимое папки components
+
+// path.extname(file) - метод для определения расширения файла
+
+//fs.readFile - читаем каждый файл в папке components и получаем содержимое
+
+// const template = '{{' + file.split('.')[0] + '}}'; - получаем переменную что нужно заменить
+
+// fileContent.toString().replace(change, code); - заменяем теги шаблона на код
+
+// { withFileTypes: true } - Это логическое значение, которое указывает, будут ли файлы возвращены как объекты fs.Dirent. Значение по умолчанию — «false».
+
+// file.isFile() - проверяем это файл?
