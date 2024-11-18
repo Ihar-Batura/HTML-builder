@@ -3,7 +3,7 @@ const path = require('path'); // предоставляет набор функ�
 
 const pathToProjectDist = path.join(__dirname, 'project-dist');
 const pathToFileTemplate = path.join(__dirname, 'template.html');
-const pathToNewFileIndex = path.join(__dirname, 'project-dist', 'index.html');
+const pathToNewFileHtml = path.join(__dirname, 'project-dist', 'index.html');
 const pathToFolderComponents = path.join(__dirname, 'components');
 const pathToNewStyle = path.join(__dirname, 'project-dist', 'style.css');
 
@@ -11,6 +11,7 @@ async function buildPage() {
   createFolderDist();
   createFileStyle();
   createFolderAssets();
+  createFileHtml();
 }
 
 buildPage();
@@ -142,4 +143,62 @@ function copyAssets() {
       });
     },
   );
+}
+
+// Код работает но есть баг, один раз в  10 запусков может не отрисовать один блок (чаще всего это header, очень редко footer)
+// С чем это связано пока не понятно, нужно будет в чате спросить!!!
+
+async function readComponents() {
+  try {
+    const components = await fs.promises.readdir(
+      pathToFolderComponents,
+      { withFileTypes: true },
+      function (componentFiles) {
+        const array = [];
+        componentFiles.forEach((compFile) => {
+          if (path.extname(compFile.name) === '.html' && compFile.isFile()) {
+            array.push(componentFiles);
+          }
+          return array;
+        });
+      },
+    );
+
+    let arrCompContent = [];
+
+    components.forEach(async (component) => {
+      const componentFileName = component.name;
+      const componentPath = component.path;
+      const componentName = component.name.split('.')[0];
+      const pathToComponent = path.join(componentPath, componentFileName);
+
+      const componentText = await fs.promises.readFile(pathToComponent, 'utf8');
+
+      arrCompContent.push(componentName);
+      arrCompContent.push(componentText);
+    });
+    return arrCompContent;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function createFileHtml() {
+  try {
+    const componentInfo = await readComponents();
+    const fileContent = await fs.promises.readFile(pathToFileTemplate, 'utf8');
+    let content = fileContent;
+
+    for (let i = 0; i < componentInfo.length; i += 2) {
+      const template = `{{${componentInfo[i]}}}`;
+
+      const componentText = componentInfo[i + 1];
+      const change = new RegExp(template, 'g');
+      content = content.replace(change, componentText);
+    }
+
+    await fs.promises.writeFile(pathToNewFileHtml, content);
+  } catch (error) {
+    console.log(error);
+  }
 }
