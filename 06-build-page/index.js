@@ -145,9 +145,6 @@ function copyAssets() {
   );
 }
 
-// Код работает но есть баг, один раз в  10 запусков может не отрисовать один блок (чаще всего это header, очень редко footer)
-// С чем это связано пока не понятно, нужно будет в чате спросить!!!
-
 async function readComponents() {
   try {
     const components = await fs.promises.readdir(
@@ -159,25 +156,22 @@ async function readComponents() {
           if (path.extname(compFile.name) === '.html' && compFile.isFile()) {
             array.push(componentFiles);
           }
-          return array;
         });
       },
     );
 
-    let arrCompContent = [];
+    let objCompContent = {};
 
-    components.forEach(async (component) => {
-      const componentFileName = component.name;
-      const componentPath = component.path;
-      const componentName = component.name.split('.')[0];
+    for (let i = 0; i < components.length; i += 1) {
+      const componentFileName = components[i].name;
+      const componentPath = components[i].path;
+      const componentName = components[i].name.split('.')[0];
       const pathToComponent = path.join(componentPath, componentFileName);
 
       const componentText = await fs.promises.readFile(pathToComponent, 'utf8');
-
-      arrCompContent.push(componentName);
-      arrCompContent.push(componentText);
-    });
-    return arrCompContent;
+      objCompContent[`${componentName}`] = `${componentText}`;
+    }
+    return objCompContent;
   } catch (error) {
     console.log(error);
   }
@@ -189,10 +183,9 @@ async function createFileHtml() {
     const fileContent = await fs.promises.readFile(pathToFileTemplate, 'utf8');
     let content = fileContent;
 
-    for (let i = 0; i < componentInfo.length; i += 2) {
-      const template = `{{${componentInfo[i]}}}`;
-
-      const componentText = componentInfo[i + 1];
+    for (let key in componentInfo) {
+      const template = `{{${key}}}`;
+      const componentText = componentInfo[key];
       const change = new RegExp(template, 'g');
       content = content.replace(change, componentText);
     }
